@@ -2,674 +2,386 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#ffffff">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>GRAVITY LAB</title>
 <style>
-:root{--ink:#111;--paper:#fff;--line:#dedede;--muted:#777}
+:root{color-scheme:light;--ink:#111;--paper:#fff;--line:#ddd}
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,sans-serif}
-button{font:inherit;color:var(--ink);background:#fff;border:1px solid #cfcfcf;border-radius:9px;padding:9px 12px;cursor:pointer;touch-action:manipulation}
-button:active{background:#e8e8e8}
-button:disabled{opacity:.35;cursor:not-allowed}
-button.primary{background:#111;color:white;border-color:#111}
-button.primary:active{background:#333}
-.app{height:100%;height:100dvh;max-width:1200px;margin:auto;padding:0 14px;display:flex;flex-direction:column}
-header{height:65px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line)}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;color:#111;font-family:system-ui,sans-serif}
+button{font:inherit;color:inherit;background:#fff;border:1px solid #bbb;border-radius:10px;padding:10px 13px;cursor:pointer}
+button:active{background:#e9e9e9}
+.app{height:100%;display:flex;flex-direction:column;max-width:1100px;margin:auto;padding:0 14px}
+header{height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:12px}
 .brand{font-size:13px;font-weight:850;letter-spacing:.16em}
-.stageLabel{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.1em}
-.headerRight{display:flex;align-items:center;gap:14px}
-.timerBox{text-align:right}
-.timer{font-size:23px;font-weight:750;letter-spacing:.025em;font-variant-numeric:tabular-nums}
-.timerCaption{font-size:9px;color:var(--muted);letter-spacing:.16em}
-main{flex:1;min-height:0;display:flex;flex-direction:column;gap:9px;padding:12px 0 9px}
-.frame{position:relative;flex:1;min-height:100px;overflow:hidden;border:1px solid #ddd;border-radius:12px;background:#fff}
-canvas{width:100%;height:100%;display:block;touch-action:none}
-.hud{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
-.pill{font-size:10px;padding:5px 8px;border:1px solid #ddd;background:#fffffff0;border-radius:6px}
-.overlay{position:absolute;inset:0;background:#ffffffed;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;overflow:auto;z-index:4}
+.stageLabel{font-size:12px;color:#666;letter-spacing:.1em;margin-top:4px}
+.timerBox{text-align:right;min-width:108px}
+.timer{font-variant-numeric:tabular-nums;font-size:24px;font-weight:750;letter-spacing:.03em}
+.timerCaption{font-size:9px;color:#777;letter-spacing:.18em;margin-top:5px}
+main{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px 0 10px;gap:10px}
+canvas{display:block;width:100%;height:100%;background:#fff;touch-action:none}
+.gameFrame{flex:1;min-height:120px;position:relative;overflow:hidden;border:1px solid #d7d7d7;border-radius:12px;background:#fff}
+.canvasHud{position:absolute;left:12px;top:10px;display:flex;gap:7px;pointer-events:none}
+.pill{background:rgba(255,255,255,.92);border:1px solid #ddd;border-radius:7px;padding:5px 8px;font-size:11px;color:#333}
+.bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.status{font-size:12px;color:#666;min-height:18px}
+.controls{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.controls button{font-size:12px;padding:9px 11px}
+.primary{background:#111;color:#fff;border-color:#111}
+.primary:active{background:#333}
+.overlay{position:absolute;inset:0;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:2}
 .overlay[hidden]{display:none}
-.dialog{width:min(100%,390px);padding:5px 0}
-.dialog h1{font-size:24px;letter-spacing:.08em;margin:0 0 9px}
-.dialog p{font-size:13px;line-height:1.7;color:#555;margin:0 0 15px}
-.actions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
-.record{font-size:12px;color:#777;margin-top:13px}
-.statusbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.status{font-size:11px;color:#666;min-height:18px}
-.controls{display:flex;gap:6px;flex-wrap:wrap}
-.controls button{font-size:11px;padding:8px 10px}
-.help{font-size:10px;color:#888;line-height:1.5;flex-shrink:0;padding-bottom:2px}
-.stageGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:12px 0;max-height:42vh;overflow:auto;padding:2px}
-.stageCell{padding:10px 2px;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-.stageCell strong{font-size:13px}
-.stageCell small{font-size:11px;color:#888}
-.stageCell.selected{background:#111;color:#fff;border-color:#111}
-.stageCell.selected small{color:#ddd}
-.stageCell.locked{opacity:.35}
-.medal{font-size:19px}
-.miniStats{display:flex;justify-content:center;gap:16px;margin:12px 0;color:#555;font-size:12px}
-#soundBtn.active{background:#111;color:#fff;border-color:#111}
-@media(min-width:700px){
- .app{padding:0 22px}
- header{height:72px}
- .timer{font-size:26px}
- main{padding-top:15px}
- .frame{border-radius:15px}
- .controls button{font-size:12px;padding:9px 12px}
- .stageGrid{grid-template-columns:repeat(7,minmax(0,1fr))}
-}
-@media(max-width:430px){
- .app{padding:0 8px}
- header{height:58px}
- .brand{font-size:11px}
- .timer{font-size:20px}
- .headerRight{gap:8px}
- .frame{border-radius:8px}
- .statusbar{align-items:flex-start}
- .controls{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
- .controls button{padding:8px 2px;font-size:10px}
- .help{font-size:9px}
-}
+.dialog{max-width:330px;width:100%}
+.dialog h1{font-size:25px;letter-spacing:.08em;margin:0 0 8px}
+.dialog p{font-size:13px;line-height:1.6;color:#555;margin:0 0 18px}
+.dialog .actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.recordline{margin-top:13px;font-size:12px;color:#777}
+.help{font-size:11px;color:#888;line-height:1.5}
+@media(min-width:760px){.app{padding:0 22px}header{height:72px}.timer{font-size:27px}.gameFrame{border-radius:15px}main{padding-top:16px}.controls button{padding:10px 14px}}
+@media(max-width:430px){.app{padding:0 9px}header{height:58px}.brand{font-size:12px}.timer{font-size:21px}.gameFrame{border-radius:9px}.bottom{align-items:flex-start}.controls{width:100%;justify-content:space-between}.controls button{flex:1;padding:9px 5px}.status{padding:2px 0}}
 </style>
 </head>
 <body>
 <div class="app">
-<header>
-  <div>
-    <div class="brand">GRAVITY LAB</div>
-    <div class="stageLabel" id="stageLabel">STAGE 01</div>
-  </div>
-  <div class="headerRight">
-    <button id="soundBtn" aria-label="효과음 켜기 또는 끄기">♪ ON</button>
+  <header>
+    <div>
+      <div class="brand">GRAVITY LAB</div>
+      <div class="stageLabel" id="stageLabel">STAGE 01</div>
+    </div>
     <div class="timerBox">
       <div class="timer" id="timer">00:00.00</div>
       <div class="timerCaption">ELAPSED TIME</div>
     </div>
-  </div>
-</header>
-<main>
-  <div class="frame" id="frame">
-    <canvas id="game"></canvas>
-    <div class="hud">
-      <span class="pill" id="mazeInfo">MAZE 9 × 9</span>
-      <span class="pill" id="modeInfo">키보드 / 센서</span>
-      <span class="pill" id="itemInfo">RINGS 0 / 0</span>
-      <span class="pill" id="specialInfo" hidden>CHALLENGE</span>
-    </div>
-    <div class="overlay" id="overlay">
-      <div class="dialog">
-        <h1 id="overlayTitle">GRAVITY LAB</h1>
-        <p id="overlayText">기기를 기울여 검은 공을 출구까지 이동하세요.<br>공이 움직이면 타이머가 시작됩니다.</p>
-        <div class="actions">
-          <button class="primary" id="startBtn">시작하기</button>
-          <button id="sensorBtn">센서 사용</button>
-          <button id="selectBtn">스테이지 선택</button>
+  </header>
+  <main>
+    <div class="gameFrame" id="gameFrame">
+      <canvas id="game" aria-label="중력 미로 게임"></canvas>
+      <div class="canvasHud">
+        <span class="pill" id="levelSize">MAZE 9 × 9</span>
+        <span class="pill" id="modePill">센서 대기</span>
+      </div>
+      <div class="overlay" id="overlay">
+        <div class="dialog">
+          <h1 id="overlayTitle">GRAVITY LAB</h1>
+          <p id="overlayText">기기를 기울여 검은 공을 출구까지 이동하세요.<br>공을 움직이면 타이머가 시작됩니다.</p>
+          <div class="actions">
+            <button class="primary" id="startBtn">시작하기</button>
+            <button id="sensorBtn">기울기 센서 사용</button>
+          </div>
+          <div class="recordline" id="overlayRecord">BEST —</div>
         </div>
-        <div class="record" id="overlayRecord">BEST —</div>
       </div>
     </div>
-  </div>
-  <div class="statusbar">
-    <div class="status" id="status">방향키 또는 기울기 센서로 조작하세요.</div>
-    <div class="controls">
-      <button id="restartBtn">↻ 재시작</button>
-      <button id="pauseBtn">Ⅱ 일시정지</button>
-      <button id="stagesBtn">▦ 스테이지</button>
-      <button id="nextBtn" class="primary" hidden>다음 →</button>
+    <div class="bottom">
+      <div class="status" id="status">기울기 센서 또는 방향키로 조작하세요.</div>
+      <div class="controls">
+        <button id="restartBtn">↻ 재시작</button>
+        <button id="pauseBtn">Ⅱ 일시정지</button>
+        <button id="nextBtn" class="primary" hidden>다음 스테이지 →</button>
+      </div>
     </div>
-  </div>
-  <div class="help">모바일: 기기를 기울이세요 · PC: 방향키 / WASD · 링을 모아 메달을 획득하세요</div>
-</main>
+    <div class="help">모바일: 화면을 기울이세요 · PC: 방향키 / WASD · 스테이지별 기록 자동 저장</div>
+  </main>
 </div>
-
 <script>
 (() => {
 'use strict';
-
 const $ = id => document.getElementById(id);
-const canvas = $('game');
-const ctx = canvas.getContext('2d');
+const canvas = $('game'), ctx = canvas.getContext('2d');
+const timerEl = $('timer'), stageLabel = $('stageLabel'), levelSizeEl = $('levelSize');
+const modePill = $('modePill'), overlay = $('overlay');
+const overlayTitle = $('overlayTitle'), overlayText = $('overlayText'), overlayRecord = $('overlayRecord');
+const startBtn = $('startBtn'), sensorBtn = $('sensorBtn'), restartBtn = $('restartBtn');
+const pauseBtn = $('pauseBtn'), nextBtn = $('nextBtn'), statusEl = $('status');
+const SAVE_KEY = 'gravity-lab-save-v1';
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}') || {}; } catch (_) {}
+let stage = Math.max(1, Number(saved.stage) || 1);
+let bests = saved.bests && typeof saved.bests === 'object' ? saved.bests : {};
+let maze = null, cell = 32, worldW = 0, worldH = 0;
+let ball = {x:0,y:0,vx:0,vy:0,r:8};
+let camera = {x:0,y:0};
+let started = false, paused = false, cleared = false, sensorActive = false;
+let elapsed = 0, tiltX = 0, tiltY = 0, keyX = 0, keyY = 0;
+let movesStarted = false, frameW = 800, frameH = 500, lastFrame = 0;
 
-const ui = {
-  frame:$('frame'),timer:$('timer'),stage:$('stageLabel'),
-  maze:$('mazeInfo'),mode:$('modeInfo'),items:$('itemInfo'),
-  special:$('specialInfo'),overlay:$('overlay'),
-  title:$('overlayTitle'),text:$('overlayText'),
-  record:$('overlayRecord'),start:$('startBtn'),
-  sensor:$('sensorBtn'),select:$('selectBtn'),
-  restart:$('restartBtn'),pause:$('pauseBtn'),
-  stages:$('stagesBtn'),next:$('nextBtn'),
-  status:$('status'),sound:$('soundBtn')
-};
-
-const SAVE_KEY='gravity-lab-complete-v2';
-let saved={};
-try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{};}catch(_){}
-let unlocked=Math.max(1,Number(saved.unlocked)||1);
-let bests=saved.bests&&typeof saved.bests==='object'?saved.bests:{};
-let medals=saved.medals&&typeof saved.medals==='object'?saved.medals:{};
-let soundOn=saved.soundOn!==false;
-
-let stage=1,maze=null,cell=34,worldW=0,worldH=0;
-let viewW=800,viewH=500,dpr=1;
-let ball={x:0,y:0,vx:0,vy:0,r:7};
-let camera={x:0,y:0};
-let elapsed=0,started=false,paused=false,cleared=false;
-let rings=[],collected=0;
-let sensorActive=false,tiltX=0,tiltY=0,keyX=0,keyY=0;
-let keys=new Set(),lastTime=0,clockReady=false;
-let hazards=[],hazardTime=0;
-let audioCtx=null;
-
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function save(){
-  try{
-    localStorage.setItem(SAVE_KEY,JSON.stringify({
-      unlocked,bests,medals,soundOn
-    }));
-  }catch(_){}
+function saveProgress() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify({stage, bests})); } catch (_) {}
 }
-function timeString(s){
-  s=Math.max(0,s||0);
-  return String(Math.floor(s/60)).padStart(2,'0')+':'+
-    String(Math.floor(s%60)).padStart(2,'0')+'.'+
-    String(Math.floor(s%1*100)).padStart(2,'0');
+function fmtTime(sec) {
+  sec = Math.max(0, sec || 0);
+  const mins = Math.floor(sec / 60), secs = Math.floor(sec % 60), cs = Math.floor((sec % 1) * 100);
+  return String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0') + '.' + String(cs).padStart(2,'0');
 }
-function sizeFor(level){
-  return Math.min(41,9+Math.floor((level-1)/1.5)*2)|1;
-}
-function specialStage(){return stage%5===0;}
-function goldTime(){return 25+stage*7;}
-function silverTime(){return 45+stage*12;}
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function mazeSize(level) { return Math.min(41, 9 + Math.floor((level - 1) / 1.6) * 2) | 1; }
 
-function makeMaze(n){
-  // DFS로 완벽 미로 생성: 출구까지의 단순 경로는 하나다.
-  const grid=Array.from({length:n},()=>Array(n).fill(1));
-  const stack=[[1,1]],dirs=[[0,-2],[2,0],[0,2],[-2,0]];
-  grid[1][1]=0;
-  while(stack.length){
-    const [x,y]=stack[stack.length-1],options=[];
-    for(const [dx,dy] of dirs){
-      const nx=x+dx,ny=y+dy;
-      if(nx>0&&ny>0&&nx<n-1&&ny<n-1&&grid[ny][nx]===1)
+function makeMaze(n) {
+  // DFS 미로: 모든 길이 연결되고 출발점부터 출구까지의 경로는 하나.
+  const grid = Array.from({length:n}, () => Array(n).fill(1));
+  const dirs = [[0,-2],[2,0],[0,2],[-2,0]];
+  const stack = [[1,1]];
+  grid[1][1] = 0;
+  while(stack.length) {
+    const [x,y] = stack[stack.length-1];
+    const options = [];
+    for(const [dx,dy] of dirs) {
+      const nx=x+dx, ny=y+dy;
+      if(nx>0 && ny>0 && nx<n-1 && ny<n-1 && grid[ny][nx]===1)
         options.push([nx,ny,dx,dy]);
     }
-    if(!options.length){stack.pop();continue;}
-    const [nx,ny,dx,dy]=options[Math.floor(Math.random()*options.length)];
-    grid[y+dy/2][x+dx/2]=0;
-    grid[ny][nx]=0;
+    if(!options.length) { stack.pop(); continue; }
+    const [nx,ny,dx,dy] = options[Math.floor(Math.random()*options.length)];
+    grid[y+dy/2][x+dx/2] = 0;
+    grid[ny][nx] = 0;
     stack.push([nx,ny]);
   }
-  return {grid,n,start:{x:1,y:1},exit:{x:n-2,y:n-2}};
+  grid[n-1][n-2] = 0;
+  return {grid,n,start:{x:1,y:1},exit:{x:n-2,y:n-1}};
 }
-function openCell(x,y){
-  return x>=0&&y>=0&&x<maze.n&&y<maze.n&&maze.grid[y][x]===0;
-}
-function getPath(){
-  const start=maze.start,end=maze.exit;
-  const q=[[start.x,start.y]],prev=new Map();
-  const key=(x,y)=>x+','+y;
-  prev.set(key(start.x,start.y),null);
-  const ds=[[0,-1],[1,0],[0,1],[-1,0]];
-  for(let i=0;i<q.length;i++){
-    const [x,y]=q[i];
-    if(x===end.x&&y===end.y)break;
-    for(const [dx,dy] of ds){
-      const nx=x+dx,ny=y+dy,k=key(nx,ny);
-      if(openCell(nx,ny)&&!prev.has(k)){
-        prev.set(k,key(x,y));q.push([nx,ny]);
-      }
-    }
-  }
-  let cur=key(end.x,end.y),out=[];
-  while(cur){
-    const [x,y]=cur.split(',').map(Number);
-    out.push({x,y});cur=prev.get(cur);
-  }
-  return out.reverse();
-}
-function generateRings(path){
-  const used=new Set([maze.start.x+','+maze.start.y,maze.exit.x+','+maze.exit.y]);
-  const candidates=[];
-  for(let y=1;y<maze.n-1;y++)for(let x=1;x<maze.n-1;x++){
-    const k=x+','+y;
-    if(openCell(x,y)&&!used.has(k))candidates.push({x,y,k});
-  }
-  // 보통 3개, 큰 미로는 최대 5개
-  const count=Math.min(5,3+Math.floor(stage/8),candidates.length);
-  const result=[];
-  for(let i=0;i<count;i++){
-    const idx=Math.floor(Math.random()*candidates.length);
-    const c=candidates.splice(idx,1)[0];
-    result.push({x:(c.x+.5)*cell,y:(c.y+.5)*cell,got:false});
-  }
-  return result;
-}
-function generateHazards(path){
-  hazards=[];
-  if(!specialStage()||path.length<6)return;
-  // 정답 경로 중간의 직선 구간에서 왕복하는 장애물
-  const candidates=[];
-  for(let i=2;i<path.length-2;i++){
-    const a=path[i-1],b=path[i],c=path[i+1];
-    const dx1=b.x-a.x,dy1=b.y-a.y,dx2=c.x-b.x,dy2=c.y-b.y;
-    if(dx1===dx2&&dy1===dy2){
-      const prev=path[i-1],next=path[i+1];
-      if(openCell(prev.x,prev.y)&&openCell(next.x,next.y))
-        candidates.push({a:{x:(prev.x+.5)*cell,y:(prev.y+.5)*cell},
-                         b:{x:(next.x+.5)*cell,y:(next.y+.5)*cell}});
-    }
-  }
-  if(candidates.length){
-    const h=candidates[Math.floor(Math.random()*candidates.length)];
-    hazards.push({...h,t:Math.random()*Math.PI*2});
-  }
-}
-function hazardPos(h){
-  const t=(Math.sin(h.t)+1)/2;
-  return {x:h.a.x+(h.b.x-h.a.x)*t,y:h.a.y+(h.b.y-h.a.y)*t};
-}
-
-function stageBuild(){
-  maze=makeMaze(sizeFor(stage));
-  cell=stage<5?36:stage<10?33:stage<16?30:28;
-  worldW=maze.n*cell;worldH=maze.n*cell;
-  ball.r=Math.max(6,cell*.21);
-  ball.x=(maze.start.x+.5)*cell;
-  ball.y=(maze.start.y+.5)*cell;
-  ball.vx=ball.vy=0;
-  elapsed=0;started=false;paused=false;cleared=false;
-  collected=0;rings=[];
-  const path=getPath();
-  rings=generateRings(path);
-  generateHazards(path);
-  hazardTime=0;
-  updateHUD();
-  ui.timer.textContent=timeString(0);
-  ui.pause.textContent='Ⅱ 일시정지';
-  ui.next.hidden=true;
-  ui.sensor.hidden=false;
-  ui.overlay.hidden=false;
-  ui.title.textContent='GRAVITY LAB';
-  ui.text.innerHTML='기기를 기울여 검은 공을 출구까지 이동하세요.<br>공이 움직이면 타이머가 시작됩니다.';
-  ui.start.textContent='시작하기';
-  ui.select.hidden=false;
-  ui.record='';ui.record.textContent='BEST '+(bests[stage]!=null?timeString(bests[stage]):'—');
-  ui.status.textContent=sensorActive?'센서 연결됨 · 기기를 기울이세요.':'방향키 / WASD 또는 센서로 조작하세요.';
-  updateCamera(true);
-  draw();
-}
-function updateHUD(){
-  ui.stage.textContent='STAGE '+String(stage).padStart(2,'0');
-  ui.maze.textContent=`MAZE ${maze.n} × ${maze.n}`;
-  ui.mode.textContent=sensorActive?'센서 연결':'키보드 / 센서';
-  ui.items.textContent=`RINGS ${collected} / ${rings.length}`;
-  ui.special.hidden=!specialStage();
-  if(specialStage())ui.special.textContent='SPECIAL STAGE';
-}
-function updateCamera(snap=false){
-  // 작은 미로는 화면 중앙에 둔다. 큰 미로에서는 카메라가 공을 추적한다.
-  const targetX=worldW<viewW?-(viewW-worldW)/2:clamp(ball.x-viewW/2,0,worldW-viewW);
-  const targetY=worldH<viewH?-(viewH-worldH)/2:clamp(ball.y-viewH/2,0,worldH-viewH);
-  if(snap){camera.x=targetX;camera.y=targetY;return;}
-  camera.x+=(targetX-camera.x)*.13;
-  camera.y+=(targetY-camera.y)*.13;
-}
-function resize(){
-  const r=canvas.getBoundingClientRect();
-  viewW=Math.max(1,r.width);viewH=Math.max(1,r.height);
-  dpr=Math.min(window.devicePixelRatio||1,2);
-  canvas.width=Math.round(viewW*dpr);canvas.height=Math.round(viewH*dpr);
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  frameW = Math.max(1, rect.width);
+  frameH = Math.max(1, rect.height);
+  canvas.width = Math.round(frameW*dpr);
+  canvas.height = Math.round(frameH*dpr);
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  updateCamera(true);draw();
-}
-
-function audio(frequency=440,duration=.07,type='sine',volume=.035){
-  if(!soundOn)return;
-  try{
-    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==='suspended')audioCtx.resume();
-    const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
-    osc.type=type;osc.frequency.setValueAtTime(frequency,audioCtx.currentTime);
-    gain.gain.setValueAtTime(volume,audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
-    osc.connect(gain);gain.connect(audioCtx.destination);
-    osc.start();osc.stop(audioCtx.currentTime+duration);
-  }catch(_){}
-}
-function vibrate(ms=15){
-  try{if(navigator.vibrate)navigator.vibrate(ms);}catch(_){}
-}
-function startGame(){
-  if(cleared)return;
-  ui.overlay.hidden=true;
-  started=true;paused=false;
-  ui.pause.textContent='Ⅱ 일시정지';
-  lastTime=performance.now();
-  ui.status.textContent=sensorActive?'기기를 기울여 출구로 이동하세요.':'방향키 / WASD로 공을 굴리세요.';
-}
-function pauseGame(){
-  if(cleared)return;
-  if(!started){
-    if(paused){paused=false;startGame();return;}
-    startGame();return;
-  }
-  started=false;paused=true;
-  ui.pause.textContent='▶ 계속';
-  showOverlay('PAUSED','잠시 쉬어가도 좋아요.<br>계속하려면 버튼을 누르세요.','계속하기');
-}
-function showOverlay(title,message,buttonText='계속하기'){
-  ui.overlay.hidden=false;
-  ui.title.textContent=title;
-  ui.text.innerHTML=message;
-  ui.start.textContent=buttonText;
-  ui.select.hidden=false;
-  ui.record.textContent='BEST '+(bests[stage]!=null?timeString(bests[stage]):'—');
-}
-function restart(){
-  stageBuild();
-  startGame();
-}
-function nextStage(){
-  stage++;
-  unlocked=Math.max(unlocked,stage);
-  save();stageBuild();startGame();
-}
-function awardMedal(time,allRings){
-  // 시간과 수집 성공 여부를 반영해 메달 등급을 계산한다.
-  let grade=time<=goldTime()?3:time<=silverTime()?2:1;
-  if(!allRings&&grade===3)grade=2;
-  return grade;
-}
-function medalName(g){
-  return g===3?'금메달':g===2?'은메달':'동메달';
-}
-function medalIcon(g){return g===3?'🥇':g===2?'🥈':'🥉';}
-function clearStage(){
-  if(cleared)return;
-  cleared=true;started=false;paused=false;
-  const score=elapsed,allRings=collected===rings.length;
-  const grade=awardMedal(score,allRings);
-  const previous=Number(bests[stage]);
-  const isBest=!Number.isFinite(previous)||score<previous;
-  if(isBest)bests[stage]=score;
-  medals[stage]=Math.max(Number(medals[stage])||0,grade);
-  unlocked=Math.max(unlocked,stage+1);
-  save();
-  ui.next.hidden=false;ui.sensor.hidden=true;
-  ui.pause.textContent='Ⅱ 일시정지';
-  audio(grade===3?880:grade===2?660:500,.24,'sine',.05);
-  vibrate([35,40,35]);
-  ui.status.textContent='스테이지 클리어 · '+medalName(grade);
-  showOverlay('STAGE CLEAR',
-    `<div class="medal">${medalIcon(grade)}</div>
-     <b>${medalName(grade)}</b><br>
-     클리어 기록 <b>${timeString(score)}</b><br>
-     수집 링 ${collected}/${rings.length}
-     ${allRings?'<br>모든 링을 수집했어요!':''}
-     ${isBest?'<br>새로운 최고 기록!':''}`,
-    '다음 스테이지');
   draw();
 }
-function setStage(n){
-  stage=n;
-  stageBuild();
-  showOverlay('STAGE '+String(stage).padStart(2,'0'),
-    `최고 기록 ${bests[stage]!=null?timeString(bests[stage]):'없음'}<br>메달 ${medals[stage]?medalIcon(Number(medals[stage])):'—'}`,
-    '시작하기');
+function buildStage() {
+  const n = mazeSize(stage);
+  maze = makeMaze(n);
+  cell = stage < 5 ? 36 : stage < 10 ? 33 : stage < 16 ? 30 : 28;
+  worldW = maze.n*cell;
+  worldH = maze.n*cell;
+  ball.r = Math.max(6, cell*0.22);
+  ball.x = (maze.start.x+0.5)*cell;
+  ball.y = (maze.start.y+0.5)*cell;
+  ball.vx = ball.vy = 0;
+  camera.x = clamp(ball.x-frameW/2,0,Math.max(0,worldW-frameW));
+  camera.y = clamp(ball.y-frameH/2,0,Math.max(0,worldH-frameH));
+  started = false; paused = false; cleared = false; movesStarted = false;
+  elapsed = 0;
+  timerEl.textContent = fmtTime(elapsed);
+  stageLabel.textContent = 'STAGE ' + String(stage).padStart(2,'0');
+  levelSizeEl.textContent = `MAZE ${n} × ${n}`;
+  pauseBtn.textContent = 'Ⅱ 일시정지';
+  nextBtn.hidden = true;
+  sensorBtn.hidden = false;
+  overlay.hidden = false;
+  overlayTitle.textContent = 'GRAVITY LAB';
+  overlayText.innerHTML = '기기를 기울여 검은 공을 출구까지 이동하세요.<br>공을 움직이면 타이머가 시작됩니다.';
+  startBtn.textContent = '시작하기';
+  overlayRecord.textContent = 'BEST ' + (bests[stage] != null ? fmtTime(bests[stage]) : '—');
+  statusEl.textContent = sensorActive ? '센서 연결됨 · 기기를 기울이세요.' : '방향키 / WASD 또는 기울기 센서로 조작하세요.';
+  draw();
 }
-function openStageSelector(){
-  started=false;paused=false;
-  ui.overlay.hidden=false;
-  ui.title.textContent='STAGE SELECT';
-  ui.text.textContent='도전할 스테이지를 선택하세요.';
-  ui.start.textContent='현재 스테이지';
-  ui.sensor.hidden=true;
-  ui.select.hidden=true;
-  ui.record.textContent=`UNLOCKED ${unlocked}`;
-  const old=ui.overlay.querySelector('.stageGrid');
-  if(old)old.remove();
-  const grid=document.createElement('div');
-  grid.className='stageGrid';
-  const max=Math.max(20,unlocked);
-  for(let n=1;n<=max;n++){
-    const b=document.createElement('button');
-    b.className='stageCell'+(n===stage?' selected':'')+(n>unlocked?' locked':'');
-    b.disabled=n>unlocked;
-    const g=Number(medals[n])||0;
-    b.innerHTML=`<strong>${String(n).padStart(2,'0')}</strong><small>${g?medalIcon(g):n>unlocked?'🔒':'—'}</small>`;
-    b.addEventListener('click',()=>{
-      grid.remove();setStage(n);
-    });
-    grid.appendChild(b);
+function setMode() {
+  modePill.textContent = sensorActive ? '센서 연결' : '키보드 / 센서';
+}
+function showOverlay(title, message, buttonText='계속하기') {
+  overlay.hidden=false;
+  overlayTitle.textContent=title;
+  overlayText.innerHTML=message;
+  startBtn.textContent=buttonText;
+  overlayRecord.textContent='BEST '+(bests[stage] != null ? fmtTime(bests[stage]) : '—');
+}
+function startGame() {
+  if(cleared) return;
+  overlay.hidden=true;
+  paused=false;
+  started=true;
+  lastFrame=performance.now();
+  statusEl.textContent=sensorActive ? '기기를 기울여 출구로 이동하세요.' : '방향키 / WASD로 공을 굴리세요.';
+}
+function togglePause() {
+  if(cleared) return;
+  if(!started) { startGame(); return; }
+  paused=!paused;
+  if(paused) {
+    started=false;
+    showOverlay('PAUSED','잠시 쉬어가도 좋아요.<br>계속하려면 아래 버튼을 누르세요.','계속하기');
+    pauseBtn.textContent='▶ 계속';
+  } else {
+    overlay.hidden=true;
+    started=true;
+    lastFrame=performance.now();
+    pauseBtn.textContent='Ⅱ 일시정지';
   }
-  ui.text.after(grid);
 }
-function closeStageSelector(){
-  const grid=ui.overlay.querySelector('.stageGrid');
-  if(grid)grid.remove();
-  ui.select.hidden=false;ui.sensor.hidden=false;
-  ui.title.textContent='GRAVITY LAB';
-  ui.text.innerHTML='기기를 기울여 검은 공을 출구까지 이동하세요.<br>공이 움직이면 타이머가 시작됩니다.';
-  ui.start.textContent='시작하기';
-  ui.record.textContent='BEST '+(bests[stage]!=null?timeString(bests[stage]):'—');
-}
-function circleRect(cx,cy,r,rx,ry,rw,rh){
-  const px=clamp(cx,rx,rx+rw),py=clamp(cy,ry,ry+rh);
+function circleRectCollision(cx,cy,r,rx,ry,rw,rh) {
+  const px=clamp(cx,rx,rx+rw), py=clamp(cy,ry,ry+rh);
   const dx=cx-px,dy=cy-py;
-  return dx*dx+dy*dy<r*r;
+  return dx*dx+dy*dy < r*r;
 }
-function collides(x,y){
+function collidesAt(x,y) {
   const r=ball.r;
-  const minX=Math.floor((x-r)/cell),maxX=Math.floor((x+r)/cell);
-  const minY=Math.floor((y-r)/cell),maxY=Math.floor((y+r)/cell);
-  for(let gy=minY;gy<=maxY;gy++)for(let gx=minX;gx<=maxX;gx++){
-    if(gx<0||gy<0||gx>=maze.n||gy>=maze.n||maze.grid[gy][gx]===1){
-      if(circleRect(x,y,r,gx*cell,gy*cell,cell,cell))return true;
+  const minX=Math.floor((x-r)/cell), maxX=Math.floor((x+r)/cell);
+  const minY=Math.floor((y-r)/cell), maxY=Math.floor((y+r)/cell);
+  for(let gy=minY;gy<=maxY;gy++) for(let gx=minX;gx<=maxX;gx++) {
+    if(gx<0||gy<0||gx>=maze.n||gy>=maze.n||maze.grid[gy][gx]===1) {
+      if(circleRectCollision(x,y,r,gx*cell,gy*cell,cell,cell)) return true;
     }
   }
   return false;
 }
-let lastBump=0;
-function physics(dt){
-  const ax=tiltX*900+keyX*850,ay=tiltY*900+keyY*850;
-  ball.vx+=ax*dt;ball.vy+=ay*dt;
-  const damping=Math.exp(-2.05*dt);
-  ball.vx*=damping;ball.vy*=damping;
-  const maxV=cell*7,speed=Math.hypot(ball.vx,ball.vy);
+function updatePhysics(dt) {
+  const ax=tiltX*900 + keyX*850;
+  const ay=tiltY*900 + keyY*850;
+  ball.vx += ax*dt;
+  ball.vy += ay*dt;
+  const damping = Math.exp(-2.05*dt);
+  ball.vx *= damping;
+  ball.vy *= damping;
+  const maxV=cell*7, speed=Math.hypot(ball.vx,ball.vy);
   if(speed>maxV){ball.vx=ball.vx/speed*maxV;ball.vy=ball.vy/speed*maxV;}
-  if(Math.abs(ax)+Math.abs(ay)<1&&Math.hypot(ball.vx,ball.vy)<5)ball.vx=ball.vy=0;
-
+  if(Math.abs(ax)+Math.abs(ay)<1 && Math.hypot(ball.vx,ball.vy)<5){ball.vx=0;ball.vy=0;}
   const nx=ball.x+ball.vx*dt;
-  if(!collides(nx,ball.y))ball.x=nx;
-  else{
-    ball.vx*=-.13;
-    if(Math.abs(ball.vx)<12)ball.vx=0;
-    if(performance.now()-lastBump>180){audio(125,.035,'square',.018);lastBump=performance.now();}
-  }
+  if(!collidesAt(nx,ball.y)) ball.x=nx;
+  else {ball.vx *= -0.12;if(Math.abs(ball.vx)<12)ball.vx=0;}
   const ny=ball.y+ball.vy*dt;
-  if(!collides(ball.x,ny))ball.y=ny;
-  else{
-    ball.vy*=-.13;
-    if(Math.abs(ball.vy)<12)ball.vy=0;
-    if(performance.now()-lastBump>180){audio(125,.035,'square',.018);lastBump=performance.now();}
-  }
+  if(!collidesAt(ball.x,ny)) ball.y=ny;
+  else {ball.vy *= -0.12;if(Math.abs(ball.vy)<12)ball.vy=0;}
+  if(Math.hypot(ball.vx,ball.vy)>8) movesStarted=true;
+  if(movesStarted) elapsed+=dt;
 
-  hazardTime+=dt;
-  for(const h of hazards){
-    h.t+=dt*1.8;
-    const p=hazardPos(h);
-    if(Math.hypot(ball.x-p.x,ball.y-p.y)<ball.r+cell*.19){
-      ball.vx*=-.65;ball.vy*=-.65;
-      const dx=ball.x-p.x,dy=ball.y-p.y,d=Math.hypot(dx,dy)||1;
-      ball.x+=dx/d*3;ball.y+=dy/d*3;
-      if(performance.now()-lastBump>200){
-        audio(170,.05,'triangle',.025);vibrate(10);lastBump=performance.now();
-      }
-    }
-  }
+  const targetX=clamp(ball.x-frameW/2,0,Math.max(0,worldW-frameW));
+  const targetY=clamp(ball.y-frameH/2,0,Math.max(0,worldH-frameH));
+  camera.x += (targetX-camera.x)*Math.min(1,dt*5.5);
+  camera.y += (targetY-camera.y)*Math.min(1,dt*5.5);
 
-  for(const ring of rings){
-    if(!ring.got&&Math.hypot(ball.x-ring.x,ball.y-ring.y)<ball.r+cell*.18){
-      ring.got=true;collected++;
-      audio(700+collected*120,.09,'sine',.04);vibrate(18);
-      ui.items.textContent=`RINGS ${collected} / ${rings.length}`;
-    }
-  }
-
-  const ex=(maze.exit.x+.5)*cell,ey=(maze.exit.y+.5)*cell;
-  if(Math.hypot(ball.x-ex,ball.y-ey)<cell*.3){clearStage();return;}
-
-  updateCamera();
-  if(Math.hypot(ball.vx,ball.vy)>8)clockReady=true;
-  if(clockReady)elapsed+=dt;
+  const ex=(maze.exit.x+0.5)*cell, ey=(maze.exit.y+0.5)*cell;
+  if(Math.hypot(ball.x-ex,ball.y-ey)<cell*0.34) clearStage();
 }
-
-function rounded(c,x,y,w,h,r){
+function clearStage() {
+  if(cleared) return;
+  cleared=true; started=false; paused=false;
+  const score=elapsed, old=bests[stage];
+  const isBest=old==null || score<old;
+  if(isBest) bests[stage]=score;
+  saved.stage=Math.max(Number(saved.stage)||1,stage+1);
+  saveProgress();
+  nextBtn.hidden=false;
+  pauseBtn.textContent='Ⅱ 일시정지';
+  statusEl.textContent=isBest?'새 최고 기록!':'스테이지 클리어!';
+  showOverlay('STAGE CLEAR',`기록 <b>${fmtTime(score)}</b><br>${isBest?'🎉 새로운 최고 기록입니다!':'최고 기록 '+fmtTime(bests[stage])}`, '다음 스테이지');
+  sensorBtn.hidden=true;
+  draw();
+}
+function nextStage() {
+  stage++;
+  saved.stage=Math.max(Number(saved.stage)||1,stage);
+  saveProgress();
+  buildStage();
+  startGame();
+}
+function restart() {
+  buildStage();
+  startGame();
+}
+function roundedRectPath(c,x,y,w,h,r) {
   const rr=Math.min(r,w/2,h/2);
-  c.beginPath();c.moveTo(x+rr,y);c.arcTo(x+w,y,x+w,y+h,rr);
-  c.arcTo(x+w,y+h,x,y+h,rr);c.arcTo(x,y+h,x,y,rr);
-  c.arcTo(x,y,x+w,y,rr);c.closePath();
+  c.beginPath(); c.moveTo(x+rr,y); c.arcTo(x+w,y,x+w,y+h,rr);
+  c.arcTo(x+w,y+h,x,y+h,rr); c.arcTo(x,y+h,x,y,rr); c.arcTo(x,y,x+w,y,rr); c.closePath();
 }
-function draw(){
-  if(!maze||!ctx)return;
-  ctx.clearRect(0,0,viewW,viewH);
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,viewW,viewH);
+function draw() {
+  if(!ctx||!maze) return;
+  ctx.clearRect(0,0,frameW,frameH);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,frameW,frameH);
   ctx.save();ctx.translate(-camera.x,-camera.y);
-
-  const sx=Math.max(0,Math.floor(camera.x/cell)-1);
-  const ex=Math.min(maze.n,Math.ceil((camera.x+viewW)/cell)+1);
-  const sy=Math.max(0,Math.floor(camera.y/cell)-1);
-  const ey=Math.min(maze.n,Math.ceil((camera.y+viewH)/cell)+1);
+  const sx=Math.max(0,Math.floor(camera.x/cell)-1), ex=Math.min(maze.n,Math.ceil((camera.x+frameW)/cell)+1);
+  const sy=Math.max(0,Math.floor(camera.y/cell)-1), ey=Math.min(maze.n,Math.ceil((camera.y+frameH)/cell)+1);
   ctx.fillStyle='#111';
-  for(let y=sy;y<ey;y++)for(let x=sx;x<ex;x++){
-    if(maze.grid[y][x]===1)ctx.fillRect(x*cell,y*cell,cell,cell);
-  }
+  for(let y=sy;y<ey;y++) for(let x=sx;x<ex;x++)
+    if(maze.grid[y][x]===1) ctx.fillRect(x*cell,y*cell,cell,cell);
 
-  // 바깥 테두리는 정확한 직선과 직각으로 유지한다.
-  const bw=Math.max(3,cell*.1);
-  ctx.fillRect(0,0,worldW,bw);ctx.fillRect(0,0,bw,worldH);
-  ctx.fillRect(worldW-bw,0,bw,worldH);
-  ctx.fillRect(0,worldH-bw,worldW,bw);
+  const border=Math.max(3,cell*.1);
+  ctx.fillRect(0,0,worldW,border);
+  ctx.fillRect(0,0,border,worldH);
+  ctx.fillRect(worldW-border,0,border,worldH);
+  ctx.fillRect(0,worldH-border,maze.exit.x*cell,border);
+  ctx.fillRect((maze.exit.x+1)*cell,worldH-border,worldW-(maze.exit.x+1)*cell,border);
 
-  // 출구
-  const gx=(maze.exit.x+.5)*cell,gy=(maze.exit.y+.5)*cell;
-  ctx.fillStyle='#111';rounded(ctx,gx-cell*.34,gy-cell*.34,cell*.68,cell*.68,cell*.07);ctx.fill();
-  ctx.fillStyle='#fff';rounded(ctx,gx-cell*.23,gy-cell*.23,cell*.46,cell*.46,cell*.04);ctx.fill();
-  ctx.fillStyle='#111';ctx.fillRect(gx-cell*.11,gy-cell*.11,cell*.22,cell*.22);
+  const gx=(maze.exit.x+0.5)*cell, gy=(maze.exit.y+0.5)*cell;
+  ctx.fillStyle='#111';roundedRectPath(ctx,gx-cell*.34,gy-cell*.34,cell*.68,cell*.68,cell*.07);ctx.fill();
+  ctx.fillStyle='#fff';roundedRectPath(ctx,gx-cell*.24,gy-cell*.24,cell*.48,cell*.48,cell*.04);ctx.fill();
+  ctx.fillStyle='#111';ctx.fillRect(gx-cell*.12,gy-cell*.12,cell*.24,cell*.24);
 
-  // 수집 링
-  for(const r of rings){
-    if(r.got)continue;
-    ctx.beginPath();ctx.arc(r.x,r.y,cell*.18,0,Math.PI*2);
-    ctx.strokeStyle='#111';ctx.lineWidth=Math.max(2,cell*.055);ctx.stroke();
-    ctx.beginPath();ctx.arc(r.x,r.y,cell*.07,0,Math.PI*2);
-    ctx.fillStyle='#111';ctx.fill();
-  }
-
-  // 특수 스테이지 장애물
-  for(const h of hazards){
-    const p=hazardPos(h);
-    ctx.beginPath();ctx.arc(p.x,p.y,cell*.19,0,Math.PI*2);
-    ctx.fillStyle='#111';ctx.fill();
-    ctx.beginPath();ctx.arc(p.x,p.y,cell*.07,0,Math.PI*2);
-    ctx.fillStyle='#fff';ctx.fill();
-  }
-
-  // 공은 흰색 테두리를 두어 검은 벽과 구별한다.
-  ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r+2,0,Math.PI*2);
-  ctx.fillStyle='#fff';ctx.fill();
-  ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);
-  ctx.fillStyle='#111';ctx.fill();
+  ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r+2,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fillStyle='#111';ctx.fill();
   ctx.restore();
 }
-
-function tick(now){
+function tick(now) {
   requestAnimationFrame(tick);
-  if(!lastTime)lastTime=now;
-  const dt=Math.min(.033,Math.max(0,(now-lastTime)/1000));
-  lastTime=now;
-  if(started&&!paused&&!cleared){
-    physics(dt);
-    ui.timer.textContent=timeString(elapsed);
+  if(!lastFrame) lastFrame=now;
+  const dt=Math.min(.033,(now-lastFrame)/1000);
+  lastFrame=now;
+  if(started && !paused && !cleared) {
+    updatePhysics(dt);
+    timerEl.textContent=fmtTime(elapsed);
     draw();
-  }
+  } else if(!started) draw();
 }
-function handleOrientation(e){
-  if(e.gamma==null||e.beta==null)return;
-  const gx=clamp(e.gamma/28,-1,1),by=clamp(e.beta/28,-1,1);
-  let a=0;
-  try{a=((screen.orientation?.angle??window.orientation??0)%360+360)%360;}catch(_){}
+function handleOrientation(event) {
+  if(event.gamma==null || event.beta==null) return;
+  const gx=clamp(event.gamma/28,-1,1), by=clamp(event.beta/28,-1,1);
+  const angle=((screen.orientation && screen.orientation.angle) ?? window.orientation ?? 0);
+  const a=((angle%360)+360)%360;
   if(a===90){tiltX=by;tiltY=-gx;}
   else if(a===270){tiltX=-by;tiltY=gx;}
   else if(a===180){tiltX=-gx;tiltY=-by;}
-  else{tiltX=gx;tiltY=by;}
-  sensorActive=true;ui.mode.textContent='센서 연결';
+  else {tiltX=gx;tiltY=by;}
+  sensorActive=true;setMode();
 }
-async function enableSensor(){
-  try{
-    if(!('DeviceOrientationEvent' in window)){
-      ui.status.textContent='센서를 지원하지 않습니다. 방향키를 사용하세요.';
+async function enableSensor() {
+  try {
+    if(typeof DeviceOrientationEvent==='undefined') {
+      statusEl.textContent='이 기기는 기울기 센서를 지원하지 않습니다. 방향키를 사용하세요.';
       return;
     }
-    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+    if(typeof DeviceOrientationEvent.requestPermission==='function') {
       const result=await DeviceOrientationEvent.requestPermission();
-      if(result!=='granted'){
-        ui.status.textContent='센서 권한이 거부되었습니다.';
+      if(result!=='granted') {
+        statusEl.textContent='센서 권한이 거부되었습니다. 방향키를 사용하세요.';
         return;
       }
     }
     window.addEventListener('deviceorientation',handleOrientation,true);
-    sensorActive=true;ui.mode.textContent='센서 연결';
-    ui.status.textContent='센서 사용 중 · 기기를 천천히 기울이세요.';
-    audio(500,.06);
-  }catch(_){
-    ui.status.textContent='센서 권한을 사용할 수 없습니다. HTTPS에서 시도하세요.';
+    sensorActive=true;setMode();
+    statusEl.textContent='센서 사용을 요청했습니다. 기기를 천천히 기울여 보세요.';
+  } catch(err) {
+    statusEl.textContent='센서 사용이 제한되었습니다. HTTPS에서 다시 시도하거나 방향키를 사용하세요.';
   }
 }
-function refreshKeys(){
-  keyX=(keys.has('ArrowRight')||keys.has('d')||keys.has('D')?1:0)-
-       (keys.has('ArrowLeft')||keys.has('a')||keys.has('A')?1:0);
-  keyY=(keys.has('ArrowDown')||keys.has('s')||keys.has('S')?1:0)-
-       (keys.has('ArrowUp')||keys.has('w')||keys.has('W')?1:0);
+const keys=new Set();
+function refreshKeys() {
+  keyX=(keys.has('ArrowRight')||keys.has('d')||keys.has('D')?1:0)-(keys.has('ArrowLeft')||keys.has('a')||keys.has('A')?1:0);
+  keyY=(keys.has('ArrowDown')||keys.has('s')||keys.has('S')?1:0)-(keys.has('ArrowUp')||keys.has('w')||keys.has('W')?1:0);
   if(keyX&&keyY){keyX*=Math.SQRT1_2;keyY*=Math.SQRT1_2;}
 }
 window.addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
   keys.add(e.key);refreshKeys();
-  if(e.key===' '&&!e.repeat)pauseGame();
-  if((e.key==='r'||e.key==='R')&&!e.repeat)restart();
+  if(e.key===' ' && !e.repeat) togglePause();
+  if(e.key==='r'||e.key==='R') restart();
 },{passive:false});
 window.addEventListener('keyup',e=>{keys.delete(e.key);refreshKeys();});
 window.addEventListener('blur',()=>{keys.clear();refreshKeys();});
-
-ui.start.addEventListener('click',()=>{
-  const grid=ui.overlay.querySelector('.stageGrid');
-  if(grid){grid.remove();closeStageSelector();}
+startBtn.addEventListener('click',()=>{
   if(cleared){nextStage();return;}
-  if(paused){paused=false;startGame();return;}
+  if(paused){overlay.hidden=true;paused=false;started=true;lastFrame=performance.now();pauseBtn.textContent='Ⅱ 일시정지';return;}
   startGame();
 });
-ui.sensor.addEventListener('click',enableSensor);
-ui.select.addEventListener('click',openStageSelector);
-ui.stages.addEventListener('click',openStageSelector);
-ui.restart.addEventListener('click',restart);
-ui.pause.addEventListener('click',pauseGame);
-ui.next.addEventListener('click',nextStage);
-ui.sound.addEventListener('click',()=>{
-  soundOn=!soundOn;
-  ui.sound.textContent=soundOn?'♪ ON':'♪ OFF';
-  ui.sound.classList.toggle('active',soundOn);
-  save();
-  if(soundOn)audio(600,.07);
-});
+sensorBtn.addEventListener('click',enableSensor);
+restartBtn.addEventListener('click',restart);
+pauseBtn.addEventListener('click',togglePause);
+nextBtn.addEventListener('click',nextStage);
 window.addEventListener('resize',resize);
-
-ui.sound.textContent=soundOn?'♪ ON':'♪ OFF';
-ui.sound.classList.toggle('active',soundOn);
-stage=Math.min(unlocked,Math.max(1,Number(saved.stage)||1));
-stageBuild();
+if(screen.orientation && screen.orientation.addEventListener)
+  screen.orientation.addEventListener('change',()=>{});
+buildStage();
 resize();
+setMode();
 requestAnimationFrame(tick);
 })();
 </script>
